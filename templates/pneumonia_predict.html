@@ -1,0 +1,74 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+
+        {% if pred == 1 %}
+        <!-- Infected Case -->
+        <div class="medical-card text-center" style="border-top: 5px solid var(--danger);">
+            <div class="alert alert-danger mb-4">
+                <h4 class="alert-heading font-weight-bold mb-0">
+                    <i class="fas fa-procedures ml-2"></i> نتيجة التحليل: إيجابية (التهاب رئوي)
+                </h4>
+                <p class="mb-0 mt-2">تشير الأشعة إلى وجود علامات التهاب رئوي.</p>
+                {% if confidence %}
+                <div class="mt-2 badge badge-danger p-2" style="font-size: 1rem;">
+                    نسبة الثقة: {{ confidence }}%
+                </div>
+                {% endif %}
+            </div>
+
+            {% if processed_img %}
+            <div class="mt-3">
+                <p>Analysis Result:</p>
+                <img src="{{ processed_img }}" class="img-fluid rounded" alt="Analysis">
+            </div>
+            {% endif %}
+
+            <div class="text-right mt-4" style="direction: rtl;">
+                <h5 class="text-danger font-weight-bold mb-3"><i class="fas fa-clipboard-list ml-2"></i>التوصيات الطبية:
+                </h5>
+                <ol class="list-group list-group-flush pr-0">
+                    <li class="list-group-item bg-transparent border-0 py-1"><i
+                            class="fas fa-user-md ml-2 text-primary"></i> مراجعة أخصائي صدرية لتأكيد التشخيص.</li>
+                    <li class="list-group-item bg-transparent border-0 py-1"><i
+                            class="fas fa-capsules ml-2 text-primary"></i> تناول المضادات الحيوية أو الأدوية حسب وصفة
+                        الطبيب.</li>
+                    <li class="list-group-item bg-transparent border-0 py-1"><i
+                            class="fas fa-mug-hot ml-2 text-primary"></i> الإكثار من السوائل الدافئة والراحة.</li>
+                    <li class="list-group-item bg-transparent border-0 py-1"><i
+                            class="fas fa-smoking-ban ml-2 text-primary"></i> تجنب التدخين والمهيجات التنفسية.</li>
+                </ol>
+            </div>
+
+            <div class="mt-5">
+                <a href="{{ url_for('pneumoniaPage') }}" class="btn btn-primary px-5">
+                    <i class="fas fa-redo ml-2"></i> إجراء فحص آخر
+                </a>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- Healthy Case -->
+        <div class="medical-card text-center" style="border-top: 5px solid var(--success);">
+            <div class="alert alert-success mb-5">
+                <h4 class="alert-heading font-weight-bold mb-0">
+                    <i class="fas fa-check-circle ml-2"></i> نتيجة التحليل: سلبية (سليمة)
+                </h4>
+                <p class="mb-0 mt-2">الرئتان تبدوان سليمتان ولا توجد علامات التهاب واضحة.</p>
+            </div>
+
+            <div class="mt-4">
+                <a href="{{ url_for('pneumoniaPage') }}" class="btn btn-primary px-5">
+                    <i class="fas fa-redo ml-2"></i> إجراء فحص آخر
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}

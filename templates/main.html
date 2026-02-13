@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Abbas">
+  <meta name="description" content="A Machine Learning and Deep Learning based webapp for Multiple Disease Prediction.">
+  <title>نظام التشخيص الطبي الذكي</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename = 'logo4.png') }}" type="image/png">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/chat_style.css') }}">
+</head>
+
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="{{ url_for('home') }}">
+        <img src="{{ url_for('static', filename = 'logo3.png') }}" alt="Logo">
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('home') }}">الرئيسية</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('malariaPage') }}">تشخيص الملاريا</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('pneumoniaPage') }}">تشخيص الرئة</a>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main>
+    <div class="container">
+      {% block content %}
+      {% endblock %}
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2026 جميع الحقوق محفوظة | تم التطوير بواسطة عباس محسن</p>
+    </div>
+    </div>
+  </footer>
+
+  <!-- Chat Widget -->
+  <div id="chat-widget">
+    <button id="chat-toggle" class="chat-toggle-btn">
+      <i class="fas fa-stethoscope"></i> مساعد طبي
+    </button>
+
+    <div id="chat-window" class="chat-window">
+      <div class="chat-header">
+        <div class="header-info">
+          <img src="{{ url_for('static', filename='logo4.png') }}" class="bot-avatar-header" alt="Bot">
+          <div>
+            <h5>المساعد الطبي الذكي</h5>
+            <span class="status-dot"></span> متصل
+          </div>
+        </div>
+        <button id="chat-close" class="close-btn"><i class="fas fa-times"></i></button>
+      </div>
+
+      <div id="chat-messages" class="chat-messages">
+        <div class="message bot-message">
+          مرحباً! أنا مساعدك الطبي الذكي. يمكنني تحليل الأعراض أو الصور الطبية وتقديم معلومات عامة. كيف أساعدك؟
+        </div>
+      </div>
+
+      <!-- Image Preview Area -->
+      <div id="image-preview-container" class="image-preview-container" style="display: none;">
+        <img id="image-preview" src="" alt="Preview">
+        <button id="remove-image" class="remove-image-btn">&times;</button>
+      </div>
+
+      <div class="chat-input-area">
+        <button id="camera-btn" class="upload-btn" title="فتح الكاميرا/المجهر"><i class="fas fa-camera"></i></button>
+        <button id="upload-btn" class="upload-btn" title="رفع صورة"><i class="fas fa-paperclip"></i></button>
+        <input type="file" id="file-input" accept="image/*" hidden>
+
+        <input type="text" id="chat-input" placeholder="اكتب سؤالك..." autocomplete="off">
+        <button id="chat-send" class="send-btn"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Camera Modal Overlay -->
+  <div id="camera-modal" class="camera-modal">
+    <div class="camera-content">
+      <video id="camera-video" autoplay playsinline></video>
+      <canvas id="camera-canvas" hidden></canvas>
+      <div class="camera-controls">
+        <button id="capture-btn" class="capture-btn"><i class="fas fa-camera"></i> التقاط صورة</button>
+        <button id="close-camera" class="close-camera-btn"><i class="fas fa-times"></i> إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const chatToggle = document.getElementById('chat-toggle');
+    const chatWindow = document.getElementById('chat-window');
+    const chatClose = document.getElementById('chat-close');
+    const chatInput = document.getElementById('chat-input');
+    const chatSend = document.getElementById('chat-send');
+    const chatMessages = document.getElementById('chat-messages');
+
+    // File Upload Elements
+    const uploadBtn = document.getElementById('upload-btn');
+    const fileInput = document.getElementById('file-input');
+    const previewContainer = document.getElementById('image-preview-container');
+    const imagePreview = document.getElementById('image-preview');
+    const removeImageBtn = document.getElementById('remove-image');
+
+    // Camera Elements
+    const cameraBtn = document.getElementById('camera-btn');
+    const cameraModal = document.getElementById('camera-modal');
+    const cameraVideo = document.getElementById('camera-video');
+    const captureBtn = document.getElementById('capture-btn');
+    const closeCameraBtn = document.getElementById('close-camera');
+    const cameraCanvas = document.getElementById('camera-canvas');
+    let stream = null;
+
+    let currentImageBase64 = null;
+    let currentImageMime = null;
+
+    // Toggle Chat
+    chatToggle.addEventListener('click', () => chatWindow.classList.toggle('active'));
+    chatClose.addEventListener('click', () => chatWindow.classList.remove('active'));
+
+    // File Upload Logic
+    uploadBtn.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        if (file.size > 4 * 1024 * 1024) { // 4MB limit
+          alert("عذراً، حجم الصورة يجب أن يكون أقل من 4 ميجابايت.");
+          fileInput.value = "";
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          imagePreview.src = e.target.result;
+          previewContainer.style.display = 'block';
+          currentImageBase64 = e.target.result;
+          currentImageMime = file.type;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    removeImageBtn.addEventListener('click', () => {
+      fileInput.value = "";
+      currentImageBase64 = null;
+      currentImageMime = null;
+      previewContainer.style.display = 'none';
+    });
+
+    // Camera Logic
+    cameraBtn.addEventListener('click', async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        cameraVideo.srcObject = stream;
+        cameraModal.classList.add('active');
+      } catch (err) {
+        alert("لا يمكن الوصول للكاميرا: " + err);
+        console.error(err);
+      }
+    });
+
+    captureBtn.addEventListener('click', () => {
+      if (!stream) return;
+
+      const context = cameraCanvas.getContext('2d');
+      // Set canvas dimensions to match video
+      cameraCanvas.width = cameraVideo.videoWidth;
+      cameraCanvas.height = cameraVideo.videoHeight;
+
+      // Draw frame
+      context.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
+
+      // Convert to Base64
+      const dataURL = cameraCanvas.toDataURL('image/jpeg');
+
+      // Stop Stream
+      stream.getTracks().forEach(track => track.stop());
+      stream = null;
+      cameraModal.classList.remove('active');
+
+      // Show Preview
+      imagePreview.src = dataURL;
+      previewContainer.style.display = 'block';
+      currentImageBase64 = dataURL;
+      currentImageMime = 'image/jpeg';
+    });
+
+    closeCameraBtn.addEventListener('click', () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+      }
+      cameraModal.classList.remove('active');
+    });
+
+    // Send Message
+    async function sendMessage() {
+      const message = chatInput.value.trim();
+
+      if (!message && !currentImageBase64) return;
+
+      // Add User Message
+      if (currentImageBase64) {
+        addImageMessage(currentImageBase64, 'user-message');
+      }
+      if (message) {
+        addMessage(message, 'user-message');
+      }
+
+      // Clear Inputs
+      chatInput.value = '';
+      const imageToSend = currentImageBase64;
+      const mimeToSend = currentImageMime;
+
+      // Reset Preview
+      removeImageBtn.click();
+
+      // Show Loading
+      const loadingId = addMessage('جاري التحليل...', 'bot-message loading');
+
+      try {
+        const payload = {
+          message: message,
+          image: imageToSend,
+          mime_type: mimeToSend
+        };
+
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        removeMessage(loadingId);
+
+        if (response.ok) {
+          const botReply = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : "عذراً، لم أتمكن من فهم الرد.";
+
+          // Format Markdown-style response (simple bolding/newlines)
+          const formattedReply = botReply.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+          addBotMessageHTML(formattedReply);
+        } else {
+          const errorMsg = data.error && data.error.message ? `خطأ: ${data.error.message}` : "حدث خطأ في الاتصال بالخادم.";
+          addMessage(errorMsg, 'bot-message error');
+        }
+
+      } catch (error) {
+        removeMessage(loadingId);
+        addMessage("حدث خطأ في الاتصال. يرجى المحاولة لاحقاً.", 'bot-message error');
+        console.error(error);
+      }
+    }
+
+    chatSend.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    function addMessage(text, className) {
+      const div = document.createElement('div');
+      div.className = `message ${className}`;
+      div.innerText = text;
+      div.id = 'msg-' + Date.now();
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return div.id;
+    }
+
+    function addBotMessageHTML(html) {
+      const div = document.createElement('div');
+      div.className = `message bot-message`;
+      div.innerHTML = html;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function addImageMessage(src, className) {
+      const div = document.createElement('div');
+      div.className = `message ${className} image-msg`;
+      const img = document.createElement('img');
+      img.src = src;
+      img.style.maxWidth = '100%';
+      img.style.borderRadius = '10px';
+      div.appendChild(img);
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function removeMessage(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    }
+  </script>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+</body>
+
+</html>

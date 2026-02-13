@@ -1,0 +1,61 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="medical-card text-center">
+            <h3 class="mb-4">تشخيص الملاريا</h3>
+            <p class="text-muted mb-4">يرجى تحميل صورة مجهرية لخلية الدم للتحقق من الإصابة.</p>
+
+            {% if message %}
+            <div class="alert alert-danger fade show" role="alert">
+                <i class="fas fa-exclamation-circle ml-2"></i> {{ message }}
+            </div>
+            {% endif %}
+
+            <form action="{{ url_for('malariapredictPage') }}" method="POST" enctype="multipart/form-data"
+                id="upload-form">
+                <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+                    <input id="file-input" onchange="readURL(this);" type="file" name="image" accept="image/*"
+                        style="display: none;">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h5>اضغط هنا لرفع الصورة</h5>
+                    <p class="text-muted small">أو قم بسحب الصورة وإفلاتها هنا</p>
+                </div>
+
+                <div class="mt-4 mb-4">
+                    <img id="blah" src="#" alt="معاينة الصورة" class="img-fluid rounded"
+                        style="max-height: 300px; display: none; margin: 0 auto; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                </div>
+
+                <button class="btn btn-primary btn-lg" type="submit">
+                    <i class="fas fa-microscope ml-2"></i> تحليل الصورة
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                $('#blah')
+                    .attr('src', e.target.result)
+                    .css('display', 'block');
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // Prevent the file input from opening twice
+    document.getElementById('file-input').addEventListener('click', function (e) {
+        e.stopPropagation();
+    });
+</script>
+
+{% endblock %}
